@@ -1,0 +1,27 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="map_file" default="$(find omni_navigation)/maps/m1.yaml"/>
+    <arg name="local_planner" default="teb" />
+    <arg name="dog_name" default="big_dog" />  
+    <!-- "big_dog" or "small_dog" -->
+    
+    <!-- 禁用模拟时间 -->
+    <param name="use_sim_time" value="false" />
+    
+    <!-- PointCloud to LaserScan -->
+    <include file="$(find omni_navigation)/launch/pc2scan.launch"/>
+
+    <!-- Map server -->
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+    <!-- AMCL -->
+    <include file="$(find omni_navigation)/launch/amcl.launch"/>
+
+    <!-- move_base -->
+    <include file="$(find omni_navigation)/launch/move_base_$(arg local_planner).launch">
+      <arg name="dog_name" value="$(arg dog_name)" />
+    </include>
+    
+    <!-- 启动 RViz，加载指定配置 -->
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find omni_navigation)/rviz/move_base.rviz" />
+</launch>

@@ -1,0 +1,25 @@
+# go2w outer envelope (real body + running clearance)
+footprint: [[0.38, 0.25], [0.38, -0.25], [-0.38, -0.25], [-0.38, 0.25]]
+
+obstacle_range: 3.5
+raytrace_range: 5.0
+
+static_layer:
+  enabled: true
+
+obstacle_layer:
+  enabled: true
+  track_unknown_space: false
+  combination_method: 1
+
+  obstacle_range: 3.5
+  raytrace_range: 5.0
+
+  observation_sources: scan
+  scan: {
+    data_type: LaserScan,
+    topic: /scan,
+    marking: true,
+    clearing: true,
+    inf_is_valid: true
+  }

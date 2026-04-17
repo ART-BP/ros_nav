@@ -1,0 +1,5 @@
+<library path="lib/libexternal_map_layer">
+  <class name="costmap_2d/ExternalMapLayer" type="costmap_2d::ExternalMapLayer" base_class_type="costmap_2d::Layer">
+    <description>ExternalMapLayer plugin.</description>
+  </class>
+</library>

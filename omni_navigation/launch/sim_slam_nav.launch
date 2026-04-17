@@ -1,0 +1,14 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="local_planner" default="teb" />
+    <arg name="dog_name" default="big_dog" />  
+    <!-- "big_dog" or "small_dog" -->
+
+    <!-- gmapping -->
+    <!--include file="$(find omni_gmapping)/launch/slam_gmapping.launch"/-->
+
+    <!-- move_base -->
+    <include file="$(find omni_navigation)/launch/move_base_$(arg local_planner).launch">
+      <arg name="dog_name" value="$(arg dog_name)" />
+    </include>
+</launch>

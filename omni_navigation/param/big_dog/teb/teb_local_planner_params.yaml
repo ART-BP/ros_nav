@@ -1,0 +1,169 @@
+TebLocalPlannerROS:
+
+  ##################################
+  # 1. Reference Frames & Topics
+  ##################################
+  odom_topic: /odometry/base          # (string) Topic to receive odometry (robot pose & velocity)
+  map_frame: /map           # (string) Global reference frame for planning
+
+  ##################################
+  # 2. Trajectory Settings
+  ##################################
+  teb_autosize: true        # (bool) Allow TEB to automatically adjust the trajectory time horizon
+  dt_ref: 0.5               # (double) Desired time difference [s] between consecutive trajectory points
+  dt_hysteresis: 0.05       # (double) Hysteresis [s] for adaptive time discretization (typically ~10% of dt_ref)
+  exact_arc_length: false   # (bool) Use exact arc length computations (more accurate but slower)
+  publish_feedback: false   # (bool) Publish optimization feedback to /move_base/feedback for external monitoring
+
+  ##################################
+  # 3. Global Plan Interaction
+  ##################################
+  global_plan_overwrite_orientation: true   # (bool) Ignore global path orientations; let TEB optimize yaw
+  max_global_plan_lookahead_dist: 3.0       # (double) [m] Maximum lookahead distance to consider from global plan (<=0 disables)
+  global_plan_prune_distance: 0.01          # (double) [m] Prune global plan points closer than this to the robot
+  global_plan_viapoint_sep: 0.2              # (double) [m] Minimum separation between via-points when sampling global plan (-1: disable)
+
+  ##################################
+  # 4. Feasibility & Initialization
+  ##################################
+  feasibility_check_no_poses: 1             # (int) 1 = check only start/end poses; 0 = check all interpolated poses
+  allow_init_with_backwards_motion: false    # (bool) Allow initial backward motion if goal lies behind (requires rear sensors)
+
+  ##################################
+  # 5. Robot Kinematics & Limits
+  ##################################
+  # 5.1 Differential / Omnidirectional Settings
+  max_vel_x: 0.5               # (double) [m/s] Max forward velocity
+  max_vel_x_backwards: 0.0     # (double) [m/s] Max backward velocity (0: no reversing)
+  max_vel_y: 0.0              # (double) [m/s] Max lateral velocity (non-zero only for omnidirectional robots)
+  max_vel_theta: 0.785         # (double) [rad/s] Max yaw (angular) velocity (~45°/s)
+
+  acc_lim_x: 2.0               # (double) [m/s²] Max acceleration in x-direction
+  acc_lim_y: 1.0               # (double) [m/s²] Max acceleration in y-direction (for omnidirectional platforms)
+  acc_lim_theta: 2.0           # (double) [rad/s²] Max angular acceleration (~115°/s²)
+
+  # 5.2 Car-like / Ackermann Settings
+  min_turning_radius: 0        # (double) [m] Minimum turning radius (0 for differential drive)
+  wheelbase: 0.8               # (double) [m] Distance between front and rear axles (for car-like robots)
+  cmd_angle_instead_rotvel: false  # (bool) Interpret cmd_vel/angular/z as steering angle instead of angular velocity
+
+  ##################################
+  # 6. Robot Footprint
+  ##################################
+  footprint_model:
+    type: "polygon"                            # (string) Model type: "point", "circular", "two_circles", "line", "polygon"
+    vertices:                                  # (array) List of [x, y] vertices (relative to robot center), automatically closed
+      - [ 0.4,  0.3]
+      - [ 0.4, -0.3]
+      - [-0.4, -0.3]
+      - [-0.4,  0.3]
+  is_footprint_dynamic: false                  # (bool) If true, footprint may change dynamically (e.g., moving manipulator)
+
+  ##################################
+  # 7. Goal Tolerance
+  ##################################
+  xy_goal_tolerance: 0.3        # (double) [m] Acceptable planar distance to goal
+  yaw_goal_tolerance: 0.15      # (double) [rad] Acceptable yaw difference to goal (~90°)
+  free_goal_vel: false          # (bool) If false, goal velocity must be zero; prevents “full-speed rush” through goal
+
+  ##################################
+  # 8. Obstacle Handling
+  ##################################
+  min_obstacle_dist: 0.1              # (double) [m] Desired minimum distance to any obstacle
+  include_costmap_obstacles: true     # (bool) Use local costmap obstacles in optimization
+  costmap_obstacles_behind_robot_dist: 1.0  # (double) [m] Ignore costmap obstacles farther behind robot than this
+
+  obstacle_poses_affected: 30         # (int) Number of trajectory poses affected by each obstacle point
+  inflation_dist: 0.6                 # (double) [m] Inflate static obstacles (same as costmap’s inflation radius)
+  dynamic_obstacle_inflation_dist: 0.6 # (double) [m] Inflate dynamic obstacles (requires include_dynamic_obstacles=true)
+
+  include_dynamic_obstacles: false    # (bool) Consider external dynamic obstacles (requires publishing obstacle msgs)
+  obstacle_keypoint_offset: 0.1       # (double) [m] Offset from footprint for “keypoint” collision checks
+  obstacle_heading_threshold: 0.45    # (double) [rad] Ignore obstacles outside this angular threshold (~25°)
+
+  obstacle_association_cutoff_factor: 5.0           # (double) Only associate obstacles within factor × min_obstacle_dist
+  obstacle_association_force_inclusion_factor: 1.5  # (double) Force include obstacles closer than this factor × min_obstacle_dist
+  legacy_obstacle_association: false                # (bool) Use old (slower) obstacle association method if true
+
+  ##################################
+  # 9. Optimization Parameters
+  ##################################
+  no_inner_iterations: 5              # (int) Number of inner optimization iterations (per outer loop)
+  no_outer_iterations: 4              # (int) Number of outer optimization iterations
+  optimization_activate: true         # (bool) Enable trajectory optimization
+  optimization_verbose: false         # (bool) Print detailed optimization info to console
+  penalty_epsilon: 0.1                # (double) Epsilon threshold for smoothing penalty functions
+
+  # Kinematic Constraints & Weights
+  weight_max_vel_x: 2.0                # (double) Penalty weight for exceeding max_vel_x
+  weight_max_vel_y: 2.0                # (double) Penalty weight for exceeding max_vel_y
+  weight_max_vel_theta: 1.0            # (double) Penalty weight for exceeding max_vel_theta
+
+  weight_acc_lim_x: 1.0                # (double) Penalty weight for exceeding acc_lim_x
+  weight_acc_lim_y: 1.0                # (double) Penalty weight for exceeding acc_lim_y
+  weight_acc_lim_theta: 2.0            # (double) Penalty weight for exceeding acc_lim_theta
+
+  weight_kinematics_nh: 1000.0         # (double) Non-holonomic constraint weight (prevents lateral slip)
+  weight_kinematics_forward_drive: 1.0 # (double) Weight for forward-drive kinematic model
+  weight_kinematics_turning_radius: 1.0 # (double) Weight for respecting min_turning_radius (Ackermann)
+
+  # Obstacle & Inflation Weights
+  weight_obstacle: 30.0                # (double) Static obstacle avoidance weight
+  weight_inflation: 0.3                # (double) Cost for being within inflated costmap area
+  weight_dynamic_obstacle: 20.0        # (double) Dynamic obstacle avoidance weight (requires include_dynamic_obstacles)
+  weight_dynamic_obstacle_inflation: 0.5 # (double) Cost scale for inflated dynamic obstacles
+
+  # Time & Path Costs
+  weight_optimaltime: 1.0             # (double) Weight for minimizing total trajectory time
+  weight_shortest_path: 0.0           # (double) Weight for minimizing trajectory length (0: ignore)
+  weight_viapoint: 1.0                # (double) Weight for staying close to global plan via-points
+  alternative_time_cost: false        # (bool) Use alternative time cost function (internal use)
+  selection_alternative_time_cost: false # (bool) Use alternative time cost in homotopy selection
+
+  ##################################
+  # 10. Homotopy Class Planner (HCP)
+  ##################################
+  enable_homotopy_class_planning: false      # (bool) Enable multiple homotopy class optimization
+  enable_multithreading: true               # (bool) Run homotopy and obstacle association in separate threads
+  max_number_classes: 4                     # (int) Maximum number of distinct homotopy classes to maintain
+  h_signature_prescaler: 0.5                # (double) Scale factor for homotopy signature computation
+  h_signature_threshold: 0.1                # (double) Threshold to consider two signatures equivalent
+
+  selection_cost_hysteresis: 1.0             # (double) Hysteresis penalty when switching homotopy classes
+  selection_prefer_initial_plan: 0.95        # (double) Bias toward the initial plan’s homotopy class [0..1]
+  selection_obst_cost_scale: 2.0             # (double) Scale factor for obstacle cost in homotopy selection
+  selection_viapoint_cost_scale: 1.0         # (double) Scale factor for via-point cost in homotopy selection
+
+  simple_exploration: false                  # (bool) If true, try simple exploration when no feasible TEB found
+  roadmap_graph_no_samples: 15               # (int) Number of samples for roadmap-based initial guesses
+  roadmap_graph_area_width: 5.0              # (double) Width [m] of sampling area for roadmap
+  obstacle_keypoint_offset: 0.1              # (double) [m] Offset for generating obstacle keypoints
+  obstacle_heading_threshold: 0.45           # (double) [rad] Angular threshold for ignoring obstacles outside field-of-view
+
+  ##################################
+  # 11. Recovery & Oscillation Handling
+  ##################################
+  shrink_horizon_backup: false               # (bool) Try shrinking time horizon when no feasible solution
+  shrink_horizon_min_duration: 10            # (double) [s] Minimum time horizon when shrinking (if above enabled)
+
+  oscillation_recovery: true                 # (bool) Enable recovery behavior when oscillation detected
+  oscillation_v_eps: 0.1                     # (double) [m/s] Velocity threshold for detecting oscillation
+  oscillation_omega_eps: 0.1                 # (double) [rad/s] Angular velocity threshold for detecting oscillation
+  oscillation_filter_duration: 10            # (int) Number of iterations to monitor for oscillation
+  oscillation_recovery_min_duration: 10      # (int) Minimum iterations to wait before another recovery
+
+  ##################################
+  # 12. Costmap Converter & Roadmap
+  ##################################
+  costmap_converter_rate: 5                  # (int) [Hz] Frequency to run costmap_converter (convert obstacles to polygons)
+  costmap_converter_spin_thread: true        # (bool) Run costmap_converter in a separate thread for efficiency
+
+  roadmap_graph_area_length_scale: 1.0        # (double) Scale factor for length of roadmap sampling area
+  roadmap_graph_area_width: 5.0               # (double) Width [m] of roadmap sampling area (duplicate of above if needed)
+  roadmap_graph_no_samples: 15                # (int) Number of samples for roadmap approach (duplicate entry if needed)
+
+  ##################################
+  # 13. Miscellaneous Settings
+  ##################################
+  cmd_angle_instead_rotvel: false             # (bool) Publish steering angle instead of rotational velocity (for specific controllers)
+

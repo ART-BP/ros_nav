@@ -1,0 +1,22 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="odom_topic" default="/odometry/base" />
+  <arg name="move_forward_only" default="false"/>
+  <arg name="dog_name" default="small_dog" /> 
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/costmap_common_params_omni.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/costmap_common_params_omni.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/local_costmap_params.yaml" command="load"  />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/move_base_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/dwa_local_planner_params_omnitest.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/dwa/global_planner_params.yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <param name="DWAPlannerROS/min_vel_x" value="0.05" if="$(arg move_forward_only)" />
+  </node>
+</launch>

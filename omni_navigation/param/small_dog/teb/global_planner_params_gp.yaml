@@ -1,0 +1,38 @@
+PathPlanner:
+# global_planner 参数配置
+  planner_name: theta_star # astar, dijkstra, gbfs, jps, bi_jps, dstar, lpa_star
+  # dstar_lite, voronoi, lazy, theta_star, lazy_theta_star, s_theta_star,
+  # hybrid_astar, rrt, rrt_star, rrt_connect, informed_rrt, quick_informed_rrt
+  # aco, pso, ga, 
+  # 算法选择参数
+#  old_navfn_behavior: true
+#  use_quadratic: true
+#  use_dijkstra: false
+#  use_grid_path: false
+  
+  # 路径规划行为参数
+  allow_unknown: true  
+  
+  #指定是否允许规划器创建穿越未知空间的路径。注意：如果你使用的是带有体素层或障碍物层的 layered_costmap_2d 成本地图，你必须将该层          #track_unknown_space 参数设置为 true，否则它会将所有未知空间转换为空闲空间（规划器随后会毫不犹豫地穿越这些空间）。
+  default_tolerance: 0.0
+  
+  # 发布和可视化参数
+  publish_scale: 100
+  publish_potential: true
+  expand_zone: false  # whether publish expand zone or not
+  show_safety_corridor: false # whether visualize safety corridor
+  # 代价计算参数
+  cost_factor: 0.55
+  neutral_cost: 50
+  lethal_cost: 253
+  
+  # 方向控制参数
+  orientation_mode: 0
+  orientation_window_size: 1
+  visualize_potential: false
+  #指定是否通过 PointCloud2 计算出的潜在区域进行可视化
+  outline_map: false #勾勒出包含致命障碍物的全局代价地图。若使用非静态（滚动窗口）全局代价地图，则需要将其设置为 false。
+  
+  rrt/sample_points: 500
+  rrt/sample_max_d: 5
+  
