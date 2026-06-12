@@ -21,7 +21,8 @@ obstacle_layer:
     data_type: LaserScan,
     topic: /scan,
     marking: true,
-    clearing: true
+    clearing: true,
+    inf_is_valid: true
   }
   
 #external_map_layer:

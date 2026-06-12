@@ -3,13 +3,16 @@
     <arg name="map_file" default="$(find omni_navigation)/maps/m1.yaml"/>
     <arg name="local_planner" default="teb" />
     <arg name="dog_name" default="big_dog" />  
+    <arg name="scan_range_max" default="10.0" />
     <!-- "big_dog" or "small_dog" -->
     
     <!-- 禁用模拟时间 -->
     <param name="use_sim_time" value="false" />
     
     <!-- PointCloud to LaserScan -->
-    <include file="$(find omni_navigation)/launch/pc2scan.launch"/>
+    <include file="$(find omni_navigation)/launch/pc2scan.launch">
+      <arg name="range_max" value="$(arg scan_range_max)" />
+    </include>
 
     <!-- Map server -->
     <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>

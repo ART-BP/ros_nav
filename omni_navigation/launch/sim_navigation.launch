@@ -1,7 +1,7 @@
 <launch>
     <!-- Arguments -->
     <arg name="map_file" default="$(find omni_navigation)/maps/map.yaml"/>
-    <arg name="local_planner" default="dwa" />
+    <arg name="local_planner" default="teb" />
     <arg name="dog_name" default="small_dog" />  
     <!-- "big_dog" or "small_dog" -->
 

@@ -3,6 +3,7 @@
 <launch>
 
     <arg name="camera" default="camera" />
+    <arg name="range_max" default="10.0" />
 
     <!-- <node pkg="tf" type="static_transform_publisher" name="rslidar_broadcaster"
           args="0.216 0.0 0.236 0.0 0.0 0.0 1.0 base_link rslidar 10" /> -->
@@ -22,7 +23,6 @@
             angle_increment: 0.00327581 # M_PI/1000.0
             scan_time: 0.1
             range_min: 0.2
-            range_max: 10
             use_inf: true
             inf_epsilon: 1.0
             # Concurrency level, affects number of pointclouds queued for processing and number of threads used
@@ -31,9 +31,9 @@
             # 2->inf : Parallelism level
             concurrency_level: 1
         </rosparam>
+        <param name="range_max" value="$(arg range_max)" />
 
     </node>
 
 </launch>
-
 

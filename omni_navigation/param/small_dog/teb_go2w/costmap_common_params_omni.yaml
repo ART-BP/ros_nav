@@ -2,10 +2,11 @@ footprint: [[0.4, 0.25], [0.4, -0.25], [-0.4, -0.25], [-0.4, 0.25]]
 #robot_radius: 0.4
 
 obstacle_range: 2.5
-raytrace_range: 4.0
+raytrace_range: 3.0
 
 static_layer:
   enabled: true
+  map_topic: /map
 
 
 obstacle_layer:
@@ -15,12 +16,15 @@ obstacle_layer:
 
   obstacle_range: 2.5
   raytrace_range: 3.0
-
+  inf_is_valid: true
   observation_sources: scan
   scan: {
     data_type: LaserScan,
     topic: /scan,
     marking: true,
-    clearing: true,
-    inf_is_valid: true
+    clearing: true
   }
+  
+# external_map_layer:
+#   enabled: false
+#   external_map_topic: "/external_local_map" 
