@@ -2,6 +2,8 @@
   <arg name="output_topic" default="/move_base/TebLocalPlannerROS/obstacles"/>
   <arg name="marker_topic" default="/prediction_to_teb/markers"/>
   <arg name="frame_id" default="map"/>
+  <arg name="use_config" default="true"/>
+  <arg name="config_file" default="$(find prediction_to_teb)/config/dynamic_obstacles.yaml"/>
   <arg name="obstacle_id" default="1"/>
   <arg name="initial_x" default="6.0"/>
   <arg name="initial_y" default="0.0"/>
@@ -16,6 +18,7 @@
         type="publish_dynamic_obstacle.py"
         name="publish_dynamic_obstacle"
         output="screen">
+    <rosparam if="$(arg use_config)" file="$(arg config_file)" command="load"/>
     <param name="output_topic" value="$(arg output_topic)"/>
     <param name="marker_topic" value="$(arg marker_topic)"/>
     <param name="frame_id" value="$(arg frame_id)"/>

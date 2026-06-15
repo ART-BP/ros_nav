@@ -132,10 +132,10 @@ TebLocalPlannerROS:
 
   selection_cost_hysteresis: 1.0             # (double) Hysteresis penalty when switching homotopy classes
   selection_prefer_initial_plan: 1.0         # (double) Do not discount the blocked initial/global-plan class
-  selection_obst_cost_scale: 2.0             # (double) Scale factor for obstacle cost in homotopy selection
+  selection_obst_cost_scale: 10.0            # (double) Strongly prefer a clear left/right bypass over waiting on the blocked class
   selection_viapoint_cost_scale: 1.0         # (double) Scale factor for via-point cost in homotopy selection
 
-  simple_exploration: false                  # (bool) If true, try simple exploration when no feasible TEB found
+  simple_exploration: true                   # (bool) Deterministically generate left/right candidates around dynamic obstacles
   viapoints_all_candidates: false            # (bool) Let alternative classes leave the global line to pass obstacles
   roadmap_graph_no_samples: 15               # (int) Number of samples for roadmap-based initial guesses
   roadmap_graph_area_width: 5.0              # (double) Width [m] of sampling area for roadmap

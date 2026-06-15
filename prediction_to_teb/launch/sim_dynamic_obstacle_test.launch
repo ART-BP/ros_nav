@@ -1,11 +1,7 @@
 <launch>
   <arg name="map_file" default="$(find omni_navigation)/maps/map.yaml"/>
   <arg name="frame_id" default="map"/>
-  <arg name="initial_x" default="2.0"/>
-  <arg name="initial_y" default="-1.5"/>
-  <arg name="velocity_x" default="0.0"/>
-  <arg name="velocity_y" default="0.3"/>
-  <arg name="radius" default="0.3"/>
+  <arg name="config_file" default="$(find prediction_to_teb)/config/dynamic_obstacles.yaml"/>
 
   <include file="$(find omni_navigation)/launch/sim_navigation.launch">
     <arg name="map_file" value="$(arg map_file)"/>
@@ -15,10 +11,6 @@
 
   <include file="$(find prediction_to_teb)/launch/publish_dynamic_obstacle.launch">
     <arg name="frame_id" value="$(arg frame_id)"/>
-    <arg name="initial_x" value="$(arg initial_x)"/>
-    <arg name="initial_y" value="$(arg initial_y)"/>
-    <arg name="velocity_x" value="$(arg velocity_x)"/>
-    <arg name="velocity_y" value="$(arg velocity_y)"/>
-    <arg name="radius" value="$(arg radius)"/>
+    <arg name="config_file" value="$(arg config_file)"/>
   </include>
 </launch>

@@ -1,0 +1,49 @@
+# TEB plans in 2D. "box" and "polygon" are published as polygon footprints,
+# while RViz displays their configured height.
+obstacles:
+  - id: 1
+    name: square_route_cube
+    shape: box
+    size: [0.8, 0.8, 0.8]
+    yaw_mode: fixed
+    color: [0.95, 0.15, 0.10, 0.85]
+    route:
+      type: square
+      center: [1.0, -1.0]
+      size: [6.0, 2.0]
+      speed: 0.65
+      phase: 0.0
+
+  # - id: 2
+  #   name: circular_cylinder
+  #   shape: cylinder
+  #   radius: 0.4
+  #   height: 0.7
+  #   color: [0.10, 0.55, 1.00, 0.85]
+  #   route:
+  #     type: square
+  #     center: [1.0, -1.0]
+  #     size: [6.0, 2.0]
+  #     speed: 0.65
+  #     phase: 0.25
+
+  # - id: 3
+  #   name: waypoint_triangle
+  #   shape: polygon
+  #   vertices:
+  #     - [-0.45, -0.30]
+  #     - [0.45, -0.30]
+  #     - [0.0, 0.45]
+  #   height: 0.6
+  #   yaw_mode: tangent
+  #   color: [0.20, 0.80, 0.25, 0.85]
+  #   route:
+  #     type: waypoints
+  #     closed: true
+  #     speed: 0.4
+  #     phase: 0.4
+  #     points:
+  #       - [-3.0, -2.0]
+  #       - [-1.0, -2.0]
+  #       - [-1.0, 2.0]
+  #       - [-3.0, 2.0]
