@@ -1267,15 +1267,17 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
   for (int i = 1; i < teb().sizePoses(); ++i)
     pose_times[i] = pose_times[i - 1] + teb().TimeDiff(i - 1);
 
-  const auto dynamic_obstacles_clear = [this](const PoseSE2& pose, double time)
+  const auto obstacles_clear = [this](const PoseSE2& pose, double time)
   {
-    if (!cfg_->obstacles.include_dynamic_obstacles || !obstacles_)
+    if (!obstacles_)
       return true;
 
     for (ObstContainer::const_iterator obstacle = obstacles_->begin(); obstacle != obstacles_->end(); ++obstacle)
     {
-      if ((*obstacle)->isDynamic() &&
-          cfg_->robot_model->estimateSpatioTemporalDistance(pose, obstacle->get(), time) < cfg_->obstacles.min_obstacle_dist)
+      const double distance = cfg_->obstacles.include_dynamic_obstacles && (*obstacle)->isDynamic()
+                                  ? cfg_->robot_model->estimateSpatioTemporalDistance(pose, obstacle->get(), time)
+                                  : cfg_->robot_model->calculateDistance(pose, obstacle->get());
+      if (distance < cfg_->obstacles.min_obstacle_dist)
       {
         return false;
       }
@@ -1285,7 +1287,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
 
   for (int i=0; i <= look_ahead_idx; ++i)
   {
-    if (!dynamic_obstacles_clear(teb().Pose(i), pose_times[i]) ||
+    if (!obstacles_clear(teb().Pose(i), pose_times[i]) ||
         costmap_model->footprintCost(teb().Pose(i).x(), teb().Pose(i).y(), teb().Pose(i).theta(), footprint_spec, inscribed_radius, circumscribed_radius) == -1)
     {
       if (visualization_)
@@ -1314,7 +1316,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
           intermediate_pose.theta() = g2o::normalize_theta(intermediate_pose.theta() + 
                                                            delta_rot / (n_additional_samples + 1.0));
           const double intermediate_time = pose_times[i] + interpolation_ratio * (pose_times[i + 1] - pose_times[i]);
-          if (!dynamic_obstacles_clear(intermediate_pose, intermediate_time) ||
+          if (!obstacles_clear(intermediate_pose, intermediate_time) ||
               costmap_model->footprintCost(intermediate_pose.x(), intermediate_pose.y(), intermediate_pose.theta(),
                                            footprint_spec, inscribed_radius, circumscribed_radius) == -1)
           {

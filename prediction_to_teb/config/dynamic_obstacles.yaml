@@ -9,9 +9,9 @@ obstacles:
     color: [0.95, 0.15, 0.10, 0.85]
     route:
       type: square
-      center: [1.0, -1.0]
-      size: [6.0, 2.0]
-      speed: 0.65
+      center: [1.0, 0.0]
+      size: [10.0, 2.0]
+      speed: 0.8
       phase: 0.0
 
   # - id: 2
