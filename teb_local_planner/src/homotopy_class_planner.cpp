@@ -568,34 +568,6 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
     double min_cost_initial_plan_teb = std::numeric_limits<double>::max();
     TebOptimalPlannerPtr initial_plan_teb = getInitialPlanTEB();
 
-    // Prefer trajectories that immediately make forward progress. Waiting and
-    // reversing remain available if all forward candidates are later removed
-    // by the feasibility check.
-    const auto initial_motion_tier = [](const TebOptimalPlannerPtr& teb)
-    {
-      if (!teb || teb->teb().sizePoses() < 2)
-        return 0;
-
-      const PoseSE2& start = teb->teb().Pose(0);
-      const Eigen::Vector2d forward(std::cos(start.theta()), std::sin(start.theta()));
-      for (int i = 1; i < teb->teb().sizePoses(); ++i)
-      {
-        const Eigen::Vector2d displacement = teb->teb().Pose(i).position() - start.position();
-        if (displacement.norm() < 0.05)
-          continue;
-
-        const double progress = displacement.dot(forward);
-        if (progress > 0.02)
-          return 1;
-        return 0;
-      }
-      return 0;
-    };
-
-    int preferred_motion_tier = 0;
-    for (TebOptPlannerContainer::const_iterator it_teb = tebs_.begin(); it_teb != tebs_.end(); ++it_teb)
-      preferred_motion_tier = std::max(preferred_motion_tier, initial_motion_tier(*it_teb));
-
     // check if last best_teb is still a valid candidate
     if (best_teb_ && std::find(tebs_.begin(), tebs_.end(), best_teb_) != tebs_.end())
     {
@@ -619,9 +591,6 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
 
     for (TebOptPlannerContainer::iterator it_teb = tebs_.begin(); it_teb != tebs_.end(); ++it_teb)
     {
-        if (initial_motion_tier(*it_teb) < preferred_motion_tier)
-          continue;
-
         // check if the related TEB leaves the local costmap region
 //      if (tebs_.size()>1 && !(*it_teb)->teb().isTrajectoryInsideRegion(20, -1, 1))
 //      {
@@ -680,9 +649,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
     if (last_best_teb_ && best_teb_ != last_best_teb_)
     {
       ros::Time now = ros::Time::now();
-      const bool improves_motion_tier = initial_motion_tier(best_teb_) > initial_motion_tier(last_best_teb_);
-      if (improves_motion_tier ||
-          (now-last_eq_class_switching_time_).toSec() > cfg_->hcp.switching_blocking_period)
+      if ((now-last_eq_class_switching_time_).toSec() > cfg_->hcp.switching_blocking_period)
       {
         last_eq_class_switching_time_ = now;
       }

@@ -98,9 +98,8 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
     return;
   // Direction-vector between start and goal and normal-vector:
   Eigen::Vector2d diff = goal.position()-start.position();
-  const double start_goal_dist = diff.norm();
 
-  if (start_goal_dist<cfg_->goal_tolerance.xy_goal_tolerance)
+  if (diff.norm()<cfg_->goal_tolerance.xy_goal_tolerance)
   {
     ROS_DEBUG("HomotopyClassPlanner::createProbRoadmapGraph(): xy-goal-tolerance already reached.");
     if (hcp_->getTrajectoryContainer().empty())
@@ -118,9 +117,6 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
   HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
   graph_[start_vtx].pos = start.position();
   diff.normalize();
-  const double nominal_robot_speed = std::max(0.1, cfg_->robot.max_vel_x);
-  const Eigen::Vector2d nominal_robot_velocity = diff * nominal_robot_speed;
-  const double prediction_horizon = start_goal_dist / nominal_robot_speed;
 
   // store nearest obstacle keypoints -> only used if limit_obstacle_heading is enabled
   std::pair<HcGraphVertexType,HcGraphVertexType> nearest_obstacle; // both vertices are stored
@@ -135,22 +131,8 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
       if (!(*it_obst)->isDynamic())
         continue;
 
-      // Predict the closest encounter with a robot moving along the local start-goal segment.
-      // This also catches fast oncoming obstacles that are currently beyond the local goal.
-      const Eigen::Vector2d relative_position = (*it_obst)->getCentroid() - start.position();
-      const Eigen::Vector2d relative_velocity = (*it_obst)->getCentroidVelocity() - nominal_robot_velocity;
-      double encounter_time = 0.0;
-      if (relative_velocity.squaredNorm() > 1e-9)
-        encounter_time = -relative_position.dot(relative_velocity) / relative_velocity.squaredNorm();
-      encounter_time = std::max(0.0, std::min(prediction_horizon, encounter_time));
-
-      Eigen::Vector2d predicted_centroid;
-      (*it_obst)->predictCentroidConstantVelocity(encounter_time, predicted_centroid);
-      double longitudinal_position = (predicted_centroid - start.position()).dot(diff);
-      if (longitudinal_position < 0.0 || longitudinal_position > start_goal_dist)
-        continue;
-
-      Eigen::Vector2d start2obst = predicted_centroid - start.position();
+      // check if obstacle is placed in front of start point
+      Eigen::Vector2d start2obst = (*it_obst)->getCentroid() - start.position();
       double dist = start2obst.norm();
       if (dist < 1e-6)
         continue;
@@ -180,35 +162,14 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
                                    (line->getCentroid() - line->end()).dot(normal));
       }
 
-      // Keypoints represent robot-center paths. Use hard clearance plus the robot
-      // radius here; dynamic inflation remains a soft optimization cost.
-      const double clearance = dist_to_obst + cfg_->robot_model->getInscribedRadius() +
+      const double clearance = std::max(dist_to_obst, cfg_->obstacles.dynamic_obstacle_inflation_dist) +
                                cfg_->hcp.obstacle_keypoint_offset;
-
-      // Begin the bypass before the predicted encounter. A keypoint centered at
-      // the encounter makes the optimizer wait until lateral clearance can no
-      // longer be reached with the configured acceleration limits.
-      const double max_side_offset = std::max(positive_extent, negative_extent) + clearance;
-      longitudinal_position = std::max(0.0, longitudinal_position - max_side_offset);
-      predicted_centroid = start.position() + diff * longitudinal_position;
-
-      // Keep enough longitudinal space on both sides of a keypoint for forward graph edges.
-      if (obstacle_heading_threshold > 0.0 && obstacle_heading_threshold < 1.0)
-      {
-        const double edge_margin = max_side_offset * obstacle_heading_threshold /
-                                   std::sqrt(1.0 - obstacle_heading_threshold * obstacle_heading_threshold);
-        if (start_goal_dist > 2.0 * edge_margin)
-        {
-          const double clamped_longitudinal = std::max(edge_margin, std::min(start_goal_dist - edge_margin, longitudinal_position));
-          predicted_centroid += diff * (clamped_longitudinal - longitudinal_position);
-        }
-      }
 
       // Add Keypoints
       HcGraphVertexType u = boost::add_vertex(graph_);
-      graph_[u].pos = predicted_centroid + normal * (positive_extent + clearance);
+      graph_[u].pos = (*it_obst)->getCentroid() + normal * (positive_extent + clearance);
       HcGraphVertexType v = boost::add_vertex(graph_);
-      graph_[v].pos = predicted_centroid - normal * (negative_extent + clearance);
+      graph_[v].pos = (*it_obst)->getCentroid() - normal * (negative_extent + clearance);
 
       // store nearest obstacle
       if (obstacle_heading_threshold && dist<min_dist)

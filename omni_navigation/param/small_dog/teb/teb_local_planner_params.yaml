@@ -21,7 +21,7 @@ TebLocalPlannerROS:
   global_plan_overwrite_orientation: true   # (bool) Ignore global path orientations; let TEB optimize yaw
   max_global_plan_lookahead_dist: 3.0       # (double) [m] Maximum lookahead distance to consider from global plan (<=0 disables)
   global_plan_prune_distance: 1.0          # (double) [m] Prune global plan points closer than this to the robot
-  global_plan_viapoint_sep: 0.5              # (double) [m] Let the local planner leave a wall-hugging global line when clearance is available
+  global_plan_viapoint_sep: 0.25             # (double) [m] Minimum separation between via-points when sampling global plan (-1: disable)
   via_points_ordered: true                   # (bool) Follow global-plan via-points in their original order
 
   ##################################
@@ -37,12 +37,11 @@ TebLocalPlannerROS:
   # 5.1 Differential / Omnidirectional Settings
   max_vel_x: 0.6               # (double) [m/s] Max forward velocity
   max_vel_x_backwards: 0.08     # (double) [m/s] Keep reverse motion slow so rotation/forward motion is preferred
-  max_vel_y: 0.4              # (double) [m/s] Permit a timely lateral bypass while forward progress remains preferred
-  max_vel_trans: 0.7           # (double) [m/s] Allow forward-plus-lateral dynamic avoidance without clipping both axes
-  max_vel_theta: 0.9          # (double) [rad/s] Establish a safe forward heading before reaching corridor corners
+  max_vel_y: 0.0              # (double) Disable holonomic optimization so forward-drive preference is enforced
+  max_vel_theta: 0.8          # (double) [rad/s] Make in-place turning preferable to prolonged strafing/reversing
 
   acc_lim_x: 2.0               # (double) [m/s²] Max acceleration in x-direction
-  acc_lim_y: 1.5               # (double) [m/s²] Reach lateral clearance before a moving obstacle reaches the encounter point
+  acc_lim_y: 0.5               # (double) [m/s²] Unused while max_vel_y=0; retained for later holonomic-mode tests
   acc_lim_theta: 2.0           # (double) [rad/s²] Allow the robot to establish a forward-facing heading quickly
 
   # 5.2 Car-like / Ackermann Settings
@@ -72,13 +71,13 @@ TebLocalPlannerROS:
   ##################################
   # 8. Obstacle Handling
   ##################################
-  min_obstacle_dist: 0.15             # (double) [m] Hard polygon-footprint clearance used by final static and dynamic feasibility checks
+  min_obstacle_dist: 0.2              # (double) [m] Desired minimum distance to any obstacle
   include_costmap_obstacles: true     # (bool) Use local costmap obstacles in optimization
   costmap_obstacles_behind_robot_dist: 3.0  # (double) [m] Retain side/rear obstacles for holonomic and reverse motion
 
   obstacle_poses_affected: 30         # (int) Number of trajectory poses affected by each obstacle point
-  inflation_dist: 0.8                 # (double) [m] Static soft buffer prevents wall-hugging before feasibility rejection
-  dynamic_obstacle_inflation_dist: 0.8 # (double) [m] Start reacting before a moving polygon reaches the hard-clearance zone
+  inflation_dist: 0.6                 # (double) [m] Inflate static obstacles (same as costmap’s inflation radius)
+  dynamic_obstacle_inflation_dist: 0.6 # (double) [m] Soft buffer; allows spatial bypass when the corridor is wide enough
 
   include_dynamic_obstacles: true     # (bool) Consider external dynamic obstacles (requires publishing obstacle msgs)
   obstacle_keypoint_offset: 0.1       # (double) [m] Offset from footprint for “keypoint” collision checks
@@ -87,9 +86,6 @@ TebLocalPlannerROS:
   obstacle_association_cutoff_factor: 8.0           # (double) Keep nearby corner geometry in the optimization
   obstacle_association_force_inclusion_factor: 3.0  # (double) Force include obstacles within 0.6 m at current min distance
   legacy_obstacle_association: false                # (bool) Use old (slower) obstacle association method if true
-  obstacle_proximity_ratio_max_vel: 1.0             # (double) Recover full speed only after leaving the wall-proximity zone
-  obstacle_proximity_lower_bound: 0.15              # (double) [m] Reduce commanded speed to zero at the hard clearance boundary
-  obstacle_proximity_upper_bound: 0.8               # (double) [m] Smoothly restore full speed with increasing wall clearance
 
   ##################################
   # 9. Optimization Parameters
@@ -109,21 +105,20 @@ TebLocalPlannerROS:
   weight_acc_lim_y: 1.0                # (double) Penalty weight for exceeding acc_lim_y
   weight_acc_lim_theta: 2.0            # (double) Penalty weight for exceeding acc_lim_theta
 
-  weight_kinematics_nh: 80.0           # (double) Prefer turn-and-forward motion without blocking timely lateral avoidance
-  weight_kinematics_forward_drive: 1000.0 # (double) Keep forward motion strongly preferred over reverse
+  weight_kinematics_nh: 1000.0         # (double) Enforce turn-then-drive motion while max_vel_y=0
+  weight_kinematics_forward_drive: 1000.0 # (double) Strongly prefer forward motion while still allowing slow reverse
   weight_kinematics_turning_radius: 1.0 # (double) Weight for respecting min_turning_radius (Ackermann)
 
   # Obstacle & Inflation Weights
-  weight_obstacle: 80.0                # (double) Stronger static-obstacle penalty reduces corner cutting
-  weight_inflation: 8.0                # (double) Prefer usable corridor center instead of grazing a wall
+  weight_obstacle: 60.0                # (double) Stronger static-obstacle penalty reduces corner cutting
+  weight_inflation: 1.0                # (double) Soft clearance penalty preserves narrow-passage feasibility
   weight_dynamic_obstacle: 80.0         # (double) Keep predicted collisions expensive without making waiting dominant
-  weight_dynamic_obstacle_inflation: 1.5 # (double) Begin spatial avoidance before the predicted hard collision
-  weight_velocity_obstacle_ratio: 100.0  # (double) Enforce speed reduction when approaching static walls
+  weight_dynamic_obstacle_inflation: 0.2 # (double) Soft inflation cost should remain small
 
   # Time & Path Costs
-  weight_optimaltime: 8.0             # (double) Make prolonged waiting/reversing costlier than an available spatial bypass
+  weight_optimaltime: 1.0             # (double) Prefer fast turn-then-forward motion over slow strafing/reversing
   weight_shortest_path: 0.0           # (double) Weight for minimizing trajectory length (0: ignore)
-  weight_viapoint: 3.0               # (double) Follow the global route without forcing the local path against walls
+  weight_viapoint: 10.0              # (double) Weight for staying close to global plan via-points
   selection_alternative_time_cost: true  # (bool) Compare candidate transition time so waiting is not always preferred
 
   ##################################
@@ -135,11 +130,10 @@ TebLocalPlannerROS:
   h_signature_prescaler: 0.5                # (double) Scale factor for homotopy signature computation
   h_signature_threshold: 0.1                # (double) Threshold to consider two signatures equivalent
 
-  selection_cost_hysteresis: 0.8             # (double) Keep the selected left/right side unless another class is clearly better
+  selection_cost_hysteresis: 1.0             # (double) Hysteresis penalty when switching homotopy classes
   selection_prefer_initial_plan: 1.0         # (double) Do not discount the blocked initial/global-plan class
   selection_obst_cost_scale: 10.0            # (double) Strongly prefer a clear left/right bypass over waiting on the blocked class
   selection_viapoint_cost_scale: 1.0         # (double) Scale factor for via-point cost in homotopy selection
-  switching_blocking_period: 2.0             # (double) [s] Prevent rapid left/right class switching during an avoidance maneuver
 
   simple_exploration: true                   # (bool) Deterministically generate left/right candidates around dynamic obstacles
   viapoints_all_candidates: false            # (bool) Let alternative classes leave the global line to pass obstacles
