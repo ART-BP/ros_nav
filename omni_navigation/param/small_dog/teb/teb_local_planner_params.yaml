@@ -36,13 +36,13 @@ TebLocalPlannerROS:
   ##################################
   # 5.1 Differential / Omnidirectional Settings
   max_vel_x: 0.6               # (double) [m/s] Max forward velocity
-  max_vel_x_backwards: 0.08     # (double) [m/s] Keep reverse motion slow so rotation/forward motion is preferred
+  max_vel_x_backwards: 0.02     # (double) [m/s] Make backing up a last-resort behavior, not a long navigation mode
   max_vel_y: 0.0              # (double) Disable holonomic optimization so forward-drive preference is enforced
-  max_vel_theta: 0.8          # (double) [rad/s] Make in-place turning preferable to prolonged strafing/reversing
+  max_vel_theta: 1.0          # (double) [rad/s] Let the robot turn in place instead of creeping backwards
 
   acc_lim_x: 2.0               # (double) [m/s²] Max acceleration in x-direction
   acc_lim_y: 0.5               # (double) [m/s²] Unused while max_vel_y=0; retained for later holonomic-mode tests
-  acc_lim_theta: 2.0           # (double) [rad/s²] Allow the robot to establish a forward-facing heading quickly
+  acc_lim_theta: 2.5           # (double) [rad/s²] Allow the robot to establish a forward-facing heading quickly
 
   # 5.2 Car-like / Ackermann Settings
   min_turning_radius: 0        # (double) [m] Minimum turning radius (0 for differential drive)
@@ -81,7 +81,7 @@ TebLocalPlannerROS:
 
   include_dynamic_obstacles: true     # (bool) Consider external dynamic obstacles (requires publishing obstacle msgs)
   obstacle_keypoint_offset: 0.1       # (double) [m] Offset from footprint for “keypoint” collision checks
-  obstacle_heading_threshold: 0.45    # (double) [rad] Ignore obstacles outside this angular threshold (~25°)
+  obstacle_heading_threshold: 0.0     # (double) Do not prune side keypoints; needed for left/right dynamic bypasses
 
   obstacle_association_cutoff_factor: 8.0           # (double) Keep nearby corner geometry in the optimization
   obstacle_association_force_inclusion_factor: 3.0  # (double) Force include obstacles within 0.6 m at current min distance
@@ -94,7 +94,7 @@ TebLocalPlannerROS:
   no_outer_iterations: 4              # (int) Number of outer optimization iterations
   optimization_activate: true         # (bool) Enable trajectory optimization
   optimization_verbose: false         # (bool) Print detailed optimization info to console
-  penalty_epsilon: 0.05               # (double) Must remain below max_vel_x_backwards
+  penalty_epsilon: 0.01               # (double) Must remain below max_vel_x_backwards
 
   # Kinematic Constraints & Weights
   weight_max_vel_x: 2.0                # (double) Penalty weight for exceeding max_vel_x
@@ -116,9 +116,9 @@ TebLocalPlannerROS:
   weight_dynamic_obstacle_inflation: 0.2 # (double) Soft inflation cost should remain small
 
   # Time & Path Costs
-  weight_optimaltime: 1.0             # (double) Prefer fast turn-then-forward motion over slow strafing/reversing
+  weight_optimaltime: 3.0             # (double) Make waiting/backing less attractive than a feasible forward bypass
   weight_shortest_path: 0.0           # (double) Weight for minimizing trajectory length (0: ignore)
-  weight_viapoint: 10.0              # (double) Weight for staying close to global plan via-points
+  weight_viapoint: 5.0               # (double) Follow the route without forcing TEB to stay on a blocked centerline
   selection_alternative_time_cost: true  # (bool) Compare candidate transition time so waiting is not always preferred
 
   ##################################
@@ -131,7 +131,7 @@ TebLocalPlannerROS:
   h_signature_threshold: 0.1                # (double) Threshold to consider two signatures equivalent
 
   selection_cost_hysteresis: 1.0             # (double) Hysteresis penalty when switching homotopy classes
-  selection_prefer_initial_plan: 1.0         # (double) Do not discount the blocked initial/global-plan class
+  selection_prefer_initial_plan: 0.5         # (double) Let clear left/right classes beat a blocked initial/global-plan class
   selection_obst_cost_scale: 10.0            # (double) Strongly prefer a clear left/right bypass over waiting on the blocked class
   selection_viapoint_cost_scale: 1.0         # (double) Scale factor for via-point cost in homotopy selection
 
@@ -140,7 +140,7 @@ TebLocalPlannerROS:
   roadmap_graph_no_samples: 15               # (int) Number of samples for roadmap-based initial guesses
   roadmap_graph_area_width: 5.0              # (double) Width [m] of sampling area for roadmap
   obstacle_keypoint_offset: 0.1              # (double) [m] Offset for generating obstacle keypoints
-  obstacle_heading_threshold: 0.45           # (double) [rad] Angular threshold for ignoring obstacles outside field-of-view
+  obstacle_heading_threshold: 0.0            # (double) Do not prune side keypoints; needed for left/right dynamic bypasses
 
   ##################################
   # 11. Recovery & Oscillation Handling

@@ -20,10 +20,9 @@ local_costmap:
 
   inflation_layer:
     enabled:              true
-    cost_scaling_factor:  2.0  # exponential rate at which the obstacle cost drops off (default: 10)
-    inflation_radius:     1.75  # max. distance from an obstacle at which costs are incurred for planning paths.
+    cost_scaling_factor:  5.0  # keep a useful wall cost gradient without filling the whole 6 m local window
+    inflation_radius:     0.60  # leave narrow corridors traversable; TEB still enforces footprint + min_obstacle_dist
     
   perception_layer:
     enabled: true
     perception_map_topic: /perception_map
-

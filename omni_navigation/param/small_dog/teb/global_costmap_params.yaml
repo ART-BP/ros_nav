@@ -9,12 +9,13 @@ global_costmap:
 
   plugins:
     - {name: static_layer,    type: "costmap_2d::StaticLayer"}
+    # - {name: obstacle_layer,  type: "costmap_2d::ObstacleLayer"}
     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
 
 
   inflation_layer:
     enabled:              true
-    cost_scaling_factor:  10.0  # exponential rate at which the obstacle cost drops off (default: 10)
-    inflation_radius:     1.75  # max. distance from an obstacle at which costs are incurred for planning paths.
+    cost_scaling_factor:  5.0  # prefer centered global paths while preserving narrow-passage feasibility
+    inflation_radius:     0.65  # avoid blocking corridors before the local planner can optimize through them
 
  
