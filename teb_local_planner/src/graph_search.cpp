@@ -89,7 +89,8 @@ void GraphSearchInterface::DepthFirst(HcGraph& g, std::vector<HcGraphVertexType>
 }
 
 
-
+// 在障碍物的左右两端放置关键点，构建图，进行深度优先搜索，寻找所有路径
+// 按照障碍物与目标点的夹角进行过滤，剔除掉一些不必要的路径
 void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, double obstacle_heading_threshold, const geometry_msgs::Twist* start_velocity, bool free_goal_vel)
 {
   // Clear existing graph and paths
