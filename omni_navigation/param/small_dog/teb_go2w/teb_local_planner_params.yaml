@@ -137,7 +137,7 @@ TebLocalPlannerROS:
   selection_viapoint_cost_scale: 1.0         # (double) Scale factor for via-point cost in homotopy selection
   switching_blocking_period: 0.5             # (double) [s] Prevent rapid left/right candidate switching
 
-  simple_exploration: false                  # (bool) If true, try simple exploration when no feasible TEB found
+  simple_exploration: true                  # (bool) If true, try simple exploration when no feasible TEB found
   viapoints_all_candidates: false            # (bool) Allow alternative classes to leave the blocked global-plan line
   roadmap_graph_no_samples: 15               # (int) Number of samples for roadmap-based initial guesses
   roadmap_graph_area_width: 5.0              # (double) Width [m] of sampling area for roadmap

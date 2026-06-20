@@ -23,8 +23,8 @@ obstacles:
     route:
       type: square
       center: [1.0, -1.0]
-      size: [6.0, 2.0]
-      speed: 0.65
+      size: [8.0, 2.0]
+      speed: 0.5
       phase: 0.25
 
   # - id: 3
