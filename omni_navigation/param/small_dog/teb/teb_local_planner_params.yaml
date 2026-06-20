@@ -158,7 +158,7 @@ TebLocalPlannerROS:
   ##################################
   # 12. 代价地图转换器与路网
   ##################################
-  costmap_converter_rate: 5                  # (int) [Hz] 运行 costmap_converter 的频率（将障碍转换为多边形）
+  costmap_converter_rate: 10                  # (int) [Hz] 运行 costmap_converter 的频率（将障碍转换为多边形）
   costmap_converter_spin_thread: true        # (bool) 将 costmap_converter 放到单独线程提高效率
 
   roadmap_graph_area_length_scale: 1.0        # (double) 路网采样区域长度的缩放因子

@@ -513,7 +513,7 @@ public:
   // implements getMinimumDistance() of the base class
   virtual double getMinimumDistance(const Point2dContainer& polygon) const
   {
-    return distance_point_to_polygon_2d(pos_, polygon) - radius_;
+    return getMinimumDistanceToPolygon(pos_, polygon);
   }
 
   // implements getMinimumDistanceVec() of the base class
@@ -537,7 +537,7 @@ public:
   // implements getMinimumSpatioTemporalDistance() of the base class
   virtual double getMinimumSpatioTemporalDistance(const Point2dContainer& polygon, double t) const
   {
-    return distance_point_to_polygon_2d(pos_ + t*centroid_velocity_, polygon) - radius_;
+    return getMinimumDistanceToPolygon(pos_ + t*centroid_velocity_, polygon);
   }
 
   // implements predictCentroidConstantVelocity() of the base class
@@ -580,6 +580,18 @@ public:
   }
 
 protected:
+
+  double getMinimumDistanceToPolygon(const Eigen::Vector2d& center, const Point2dContainer& polygon) const
+  {
+    const double boundary_dist = distance_point_to_polygon_2d(center, polygon);
+
+    // distance_point_to_polygon_2d() is unsigned. If the circle center is already
+    // inside the footprint, include the radius in the penetration depth.
+    if (point_inside_polygon_2d(center, polygon))
+      return -(boundary_dist + radius_);
+
+    return boundary_dist - radius_;
+  }
 
   Eigen::Vector2d pos_; //!< Store the center position of the CircularObstacle
   double radius_ = 0.0; //!< Radius of the obstacle
