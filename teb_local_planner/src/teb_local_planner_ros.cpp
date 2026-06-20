@@ -654,7 +654,7 @@ Eigen::Vector2d TebLocalPlannerROS::tfPoseToEigenVector2dTransRot(const tf::Pose
   return vel;
 }
       
-      
+// 修剪在身后dist_behind_robot米的全局路径，仅仅作用于局部规划。      
 bool TebLocalPlannerROS::pruneGlobalPlan(const tf2_ros::Buffer& tf, const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& global_plan, double dist_behind_robot)
 {
   if (global_plan.empty())
@@ -698,7 +698,7 @@ bool TebLocalPlannerROS::pruneGlobalPlan(const tf2_ros::Buffer& tf, const geomet
   return true;
 }
       
-
+// 转换全局路径到局部规划的坐标系，并且丢弃距离机器人太远的路径点（仅仅作用于局部规划）。
 bool TebLocalPlannerROS::transformGlobalPlan(const tf2_ros::Buffer& tf, const std::vector<geometry_msgs::PoseStamped>& global_plan,
                   const geometry_msgs::PoseStamped& global_pose, const costmap_2d::Costmap2D& costmap, const std::string& global_frame, double max_plan_length,
                   std::vector<geometry_msgs::PoseStamped>& transformed_plan, int* current_goal_idx, geometry_msgs::TransformStamped* tf_plan_to_global) const
