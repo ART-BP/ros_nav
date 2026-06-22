@@ -3,15 +3,15 @@ TebLocalPlannerROS:
   ##################################
   # 1. 参考坐标系与话题
   ##################################
-  odom_topic: /odometry/base          # (string) 接收里程计的Topic（机器人位姿与速度）
+  odom_topic: /loc/base          # (string) 接收里程计的Topic（机器人位姿与速度）
   map_frame: /map           # (string) 用于规划的全局参考坐标系
 
   ##################################
   # 2. 轨迹设置
   ##################################
   teb_autosize: true        # (bool) 允许 TEB 自动调整轨迹时间窗
-  dt_ref: 0.2               # (double) 参考时间间隔；更密的轨迹采样有助于动态圆时序约束
-  dt_hysteresis: 0.02       # (double) 自适应时间离散的滞后量 [s]（通常约为 dt_ref 的 10%）
+  dt_ref: 0.5               # (double) 参考时间间隔；更密的轨迹采样有助于动态圆时序约束
+  dt_hysteresis: 0.05       # (double) 自适应时间离散的滞后量 [s]（通常约为 dt_ref 的 10%）
   exact_arc_length: false   # (bool) 使用精确弧长计算（更精确但更慢）
   publish_feedback: false   # (bool) 将优化反馈发布到 /move_base/feedback 以供外部监控
 
@@ -35,15 +35,15 @@ TebLocalPlannerROS:
   # 5. 机器人运动学与限制
   ##################################
   # 5.1 差动 / 全向 设置
-  max_vel_x: 1.0               # (double) [m/s] 最大前向速度
-  max_vel_x_backwards: 0.02     # (double) [m/s] 后退最大速度（设低以使后退为兜底行为）
+  max_vel_x: 0.8               # (double) [m/s] 最大前向速度
+  max_vel_x_backwards: 0.05     # (double) [m/s] 后退最大速度（设低以使后退为兜底行为）
   max_vel_y: 0.0              # (double) 关闭全向速度优化以强制优先前向行驶
   max_vel_theta: 1.0          # (double) [rad/s] 最大角速度，允许原地旋转而非缓慢后退
   max_vel_trans: 1.0
 
-  acc_lim_x: 1.5               # (double) [m/s²] x 方向最大加速度
+  acc_lim_x: 1.0               # (double) [m/s²] x 方向最大加速度
   acc_lim_y: 0.0               # (double) [m/s²] 当 max_vel_y=0 时未使用；保留以备全向模式测试
-  acc_lim_theta: 2.0           # (double) [rad/s²] 角加速度限制，使机器人能快速建立朝前的航向
+  acc_lim_theta: 1.2           # (double) [rad/s²] 角加速度限制，使机器人能快速建立朝前的航向
 
   # 5.2 类车 / Ackermann 设置
   min_turning_radius: 0        # (double) [m] 最小转弯半径（差动驱动设为0）
@@ -56,10 +56,10 @@ TebLocalPlannerROS:
   footprint_model:
     type: "polygon"                            # (string) 占据模型类型：point, circular, two_circles, line, polygon
     vertices:                                  # (array) 顶点列表 [x, y]（相对于机器人中心），自动闭合
-      - [ 0.4,  0.25]
-      - [ 0.4, -0.25]
-      - [-0.4, -0.25]
-      - [-0.4,  0.25]
+      - [ 0.5,  0.28]
+      - [ 0.5, -0.28]
+      - [-0.5, -0.28]
+      - [-0.5,  0.28]
   is_footprint_dynamic: false                  # (bool) 若为 true，机器人占据可能动态变化（例如机械臂移动）
 
   ##################################
@@ -115,7 +115,7 @@ TebLocalPlannerROS:
   weight_dynamic_obstacle_inflation: 1.0 # (double) 在动态缓冲区内的响应强度权重
 
   # 时间与路径代价
-  weight_optimaltime: 5.0             # (double) 避免被迫选择穿越动态障碍的快速路径
+  weight_optimaltime: 4.0             # (double) 避免被迫选择穿越动态障碍的快速路径
   weight_shortest_path: 0.0           # (double) 最短路径权重（0 表示忽略）
   weight_viapoint: 5.0               # (double) 让本地绕行更早偏离被阻塞的中心线
   selection_alternative_time_cost: true  # (bool) 比较候选类的转换时间，使等待不总是被偏好
@@ -125,7 +125,7 @@ TebLocalPlannerROS:
   ##################################
   enable_homotopy_class_planning: true       # (bool) 在动态障碍周围生成空间替代路径
   enable_multithreading: true               # (bool) 启用多线程，将同伦计算与障碍关联分线程运行
-  max_number_classes: 4                     # (int) 保留的最大类数（左右/全局候选及保留类）
+  max_number_classes: 3                     # (int) 保留的最大类数（左右/全局候选及保留类）
   h_signature_prescaler: 0.5                # (double) 同伦签名计算的缩放因子
   h_signature_threshold: 0.1                # (double) 判断两个同伦签名是否相等的阈值
 
@@ -157,7 +157,7 @@ TebLocalPlannerROS:
   ##################################
   # 12. 代价地图转换器与路网
   ##################################
-  costmap_converter_rate: 10                  # (int) [Hz] 运行 costmap_converter 的频率（将障碍转换为多边形）
+  costmap_converter_rate: 5                  # (int) [Hz] 运行 costmap_converter 的频率（将障碍转换为多边形）
   costmap_converter_spin_thread: true        # (bool) 将 costmap_converter 放到单独线程提高效率
 
   roadmap_graph_area_length_scale: 1.0        # (double) 路网采样区域长度的缩放因子

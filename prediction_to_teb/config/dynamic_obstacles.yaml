@@ -11,7 +11,7 @@ obstacles:
       type: square
       center: [1.0, -1.0]
       size: [14.0, 2.0]
-      speed: 4.0
+      speed: 2.0
       phase: 0.0
 
   # - id: 2

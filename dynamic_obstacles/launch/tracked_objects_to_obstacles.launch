@@ -1,0 +1,11 @@
+<launch>
+  <arg name="input_topic" default="/tracked_objects"/>
+  <arg name="output_topic" default="/move_base/TebLocalPlannerROS/obstacles"/>
+  <arg name="default_radius" default="0.3"/>
+
+  <node pkg="dynamic_obstacles" type="tracked_objects_to_obstacles" name="tracked_objects_to_obstacles" output="screen">
+    <param name="input_topic" value="$(arg input_topic)"/>
+    <param name="output_topic" value="$(arg output_topic)"/>
+    <param name="default_radius" value="$(arg default_radius)"/>
+  </node>
+</launch>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>dynamic_obstacles</name>
+  <version>0.0.1</version>
+  <description>Tracked object messages and an adapter to publish TEB obstacle messages.</description>
+
+  <maintainer email="allgo@todo.todo">allgo</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <depend>costmap_converter</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>uuid_msgs</depend>
+
+  <exec_depend>message_runtime</exec_depend>
+</package>
