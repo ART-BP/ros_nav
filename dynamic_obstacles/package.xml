@@ -17,6 +17,7 @@
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>uuid_msgs</depend>
+  <depend>visualization_msgs</depend>
 
   <exec_depend>message_runtime</exec_depend>
 </package>

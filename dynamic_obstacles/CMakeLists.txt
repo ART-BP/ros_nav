@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf2
   uuid_msgs
+  visualization_msgs
 )
 
 add_message_files(
@@ -37,6 +38,7 @@ catkin_package(
     std_msgs
     tf2
     uuid_msgs
+    visualization_msgs
 )
 
 include_directories(

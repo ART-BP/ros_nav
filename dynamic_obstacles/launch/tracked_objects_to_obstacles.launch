@@ -1,11 +1,25 @@
 <launch>
   <arg name="input_topic" default="/tracked_objects"/>
   <arg name="output_topic" default="/move_base/TebLocalPlannerROS/obstacles"/>
+  <arg name="marker_topic" default="/tracked_objects_to_obstacles/markers"/>
   <arg name="default_radius" default="0.3"/>
+  <arg name="default_height" default="0.6"/>
+  <arg name="publish_markers" default="true"/>
+  <arg name="marker_lifetime" default="0.5"/>
+  <arg name="velocity_marker_seconds" default="1.5"/>
+  <arg name="prediction_horizon" default="5.0"/>
+  <arg name="prediction_samples" default="30"/>
 
   <node pkg="dynamic_obstacles" type="tracked_objects_to_obstacles" name="tracked_objects_to_obstacles" output="screen">
     <param name="input_topic" value="$(arg input_topic)"/>
     <param name="output_topic" value="$(arg output_topic)"/>
+    <param name="marker_topic" value="$(arg marker_topic)"/>
     <param name="default_radius" value="$(arg default_radius)"/>
+    <param name="default_height" value="$(arg default_height)"/>
+    <param name="publish_markers" value="$(arg publish_markers)"/>
+    <param name="marker_lifetime" value="$(arg marker_lifetime)"/>
+    <param name="velocity_marker_seconds" value="$(arg velocity_marker_seconds)"/>
+    <param name="prediction_horizon" value="$(arg prediction_horizon)"/>
+    <param name="prediction_samples" value="$(arg prediction_samples)"/>
   </node>
 </launch>
