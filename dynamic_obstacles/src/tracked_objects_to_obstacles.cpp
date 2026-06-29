@@ -135,6 +135,8 @@ public:
     private_nh_.param("prediction_horizon", prediction_horizon_, 5.0);
     private_nh_.param("prediction_samples", prediction_samples_, 30);
     private_nh_.param("drop_duplicate_closing_vertex", drop_duplicate_closing_vertex_, true);
+    private_nh_.param("min_velocity", min_velocity_, 0.1);
+    
     if (!isFinite(default_radius_) || default_radius_ <= kEpsilon)
     {
       ROS_WARN("~default_radius must be positive; using 0.3 m");
@@ -164,6 +166,11 @@ public:
     {
       ROS_WARN("~prediction_samples must be >= 1; using 30");
       prediction_samples_ = 30;
+    }
+    if (!isFinite(min_velocity_) || min_velocity_ < 0.0)
+    {
+      ROS_WARN("~min_velocity must be non-negative; using 0.1 m/s");
+      min_velocity_ = 0.1;
     }
 
     obstacles_pub_ = nh_.advertise<costmap_converter::ObstacleArrayMsg>(output_topic_, 1);
@@ -226,17 +233,17 @@ private:
       return false;
     }
 
+    if (!tracked_object.has_linear_velocity || (tracked_object.twist.twist.linear.x < min_velocity_ && tracked_object.twist.twist.linear.y < min_velocity_))
+    {
+      ROS_INFO_THROTTLE(1.0, "Skipping tracked object with zero velocity");
+      return false;
+    }
+
     obstacle.header = header;
     obstacle.id = idFromUuid(tracked_object.object_id);
     obstacle.orientation = normalizedQuaternionMsg(pose.orientation);
     obstacle.velocities = tracked_object.twist;
 
-    if (!tracked_object.has_linear_velocity)
-    {
-      obstacle.velocities.twist.linear.x = 0.0;
-      obstacle.velocities.twist.linear.y = 0.0;
-      obstacle.velocities.twist.linear.z = 0.0;
-    }
     if (!tracked_object.has_angular_velocity)
     {
       obstacle.velocities.twist.angular.x = 0.0;
@@ -595,6 +602,7 @@ private:
   double velocity_marker_seconds_;
   double prediction_horizon_;
   int prediction_samples_;
+  double min_velocity_;
   bool drop_duplicate_closing_vertex_;
 };
 

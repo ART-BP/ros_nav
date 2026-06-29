@@ -5,10 +5,11 @@
   <arg name="default_radius" default="0.3"/>
   <arg name="default_height" default="0.6"/>
   <arg name="publish_markers" default="true"/>
-  <arg name="marker_lifetime" default="0.5"/>
+  <arg name="marker_lifetime" default="0.2"/>
   <arg name="velocity_marker_seconds" default="1.5"/>
-  <arg name="prediction_horizon" default="5.0"/>
+  <arg name="prediction_horizon" default="2.0"/>
   <arg name="prediction_samples" default="30"/>
+  <arg name="min_velocity" default="0.1"/>
 
   <node pkg="dynamic_obstacles" type="tracked_objects_to_obstacles" name="tracked_objects_to_obstacles" output="screen">
     <param name="input_topic" value="$(arg input_topic)"/>
@@ -21,5 +22,6 @@
     <param name="velocity_marker_seconds" value="$(arg velocity_marker_seconds)"/>
     <param name="prediction_horizon" value="$(arg prediction_horizon)"/>
     <param name="prediction_samples" value="$(arg prediction_samples)"/>
+    <param name="min_velocity" value="$(arg min_velocity)"/>
   </node>
 </launch>
