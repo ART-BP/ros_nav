@@ -1,0 +1,9 @@
+<library path="lib/libneupan_local_planner">
+  <class name="neupan_service/NeuPANLocalPlannerROS"
+         type="neupan_service::NeuPANLocalPlannerROS"
+         base_class_type="nav_core::BaseLocalPlanner">
+    <description>
+      move_base local planner adapter for the NeuPAN service node.
+    </description>
+  </class>
+</library>

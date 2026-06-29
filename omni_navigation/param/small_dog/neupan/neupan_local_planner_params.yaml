@@ -1,0 +1,10 @@
+NeuPANLocalPlannerROS:
+  set_path_service: /neupan_service/set_path
+  compute_velocity_service: /neupan_service/compute_velocity
+  wait_for_service_timeout: 10.0
+  wait_for_services_on_initialize: true
+  transform_timeout: 0.2
+  use_tf_pose: true
+  reset_on_set_plan: true
+  publish_plans: true
+  stop_returns_failure: false

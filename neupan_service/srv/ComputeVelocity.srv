@@ -1,0 +1,10 @@
+geometry_msgs/PoseStamped robot_pose
+bool use_tf_pose
+---
+bool success
+bool arrive
+bool stop
+geometry_msgs/Twist cmd_vel
+nav_msgs/Path local_plan
+nav_msgs/Path reference_plan
+string message

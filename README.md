@@ -63,7 +63,18 @@ rosrun map_server map_saver [-f mapname]
 roslaunch omni_gazebo gazebo.launch
 roslaunch omni_navigation omni_navigation.launch  local_planner:=teb
 ```
-Candidate local_planner:TEB and DWA
+Candidate local_planner: `teb`, `dwa`, `neupan`
+
+For NeuPAN, activate the Python environment that provides the `neupan` package
+before launching:
+
+```
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate neupan38
+source /opt/ros/noetic/setup.bash
+source <catkin_ws>/devel/setup.bash
+roslaunch omni_navigation sim_navigation.launch local_planner:=neupan
+```
 
 ## Topic
 * /cmd_vel <```geometry_msgs/Twist```> - The robot will get the value from this topic to control the robot velocity.

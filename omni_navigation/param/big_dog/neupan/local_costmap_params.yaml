@@ -1,0 +1,14 @@
+local_costmap:
+  global_frame: map
+  robot_base_frame: base_link
+  transform_tolerance: 0.5
+
+  update_frequency: 0.0
+  publish_frequency: 0.0
+  rolling_window: true
+  static_map: false
+  width: 1.0
+  height: 1.0
+  resolution: 0.2
+
+  plugins: []

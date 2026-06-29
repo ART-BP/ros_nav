@@ -1,0 +1,5 @@
+nav_msgs/Path path
+bool reset
+---
+bool success
+string message

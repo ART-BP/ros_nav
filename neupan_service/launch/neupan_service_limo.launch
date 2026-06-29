@@ -1,0 +1,49 @@
+<launch>
+    <arg name="config_file" default="$(find neupan_service)/config/neupan_planner_limo.yaml"/>
+    <arg name="dune_checkpoint" default="$(find neupan_service)/weights/limo/model_5000.pth"/>
+    <arg name="neupan_conda_env" default="neupan38"/>
+    <arg name="neupan_conda_setup" default="$(env HOME)/anaconda3/etc/profile.d/conda.sh"/>
+
+    <arg name="map_frame" default="odom"/>
+    <arg name="base_frame" default="base_link"/>
+    <arg name="lidar_frame" default=""/>
+
+    <arg name="scan_topic" default="/limo/scan"/>
+    <arg name="path_topic" default="/initial_path"/>
+    <arg name="goal_topic" default="/move_base_simple/goal"/>
+    <arg name="cmd_vel_topic" default="/cmd_vel"/>
+
+    <arg name="run_control_loop" default="true"/>
+    <arg name="publish_cmd_vel" default="true"/>
+    <arg name="control_rate" default="20.0"/>
+
+    <arg name="scan_range" default="0.0 5.0"/>
+    <arg name="scan_angle_range" default="-3.14 3.14"/>
+    <arg name="scan_downsample" default="6"/>
+
+    <node name="neupan_service" pkg="neupan_service" type="neupan_service_conda.sh" output="screen">
+        <env name="NEUPAN_CONDA_ENV" value="$(arg neupan_conda_env)"/>
+        <env name="NEUPAN_CONDA_SETUP" value="$(arg neupan_conda_setup)"/>
+        <env name="MPLCONFIGDIR" value="/tmp/matplotlib"/>
+
+        <param name="config_file" value="$(arg config_file)"/>
+        <param name="dune_checkpoint" value="$(arg dune_checkpoint)"/>
+
+        <param name="map_frame" value="$(arg map_frame)"/>
+        <param name="base_frame" value="$(arg base_frame)"/>
+        <param name="lidar_frame" value="$(arg lidar_frame)"/>
+
+        <param name="scan_topic" value="$(arg scan_topic)"/>
+        <param name="path_topic" value="$(arg path_topic)"/>
+        <param name="goal_topic" value="$(arg goal_topic)"/>
+        <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+
+        <param name="run_control_loop" value="$(arg run_control_loop)"/>
+        <param name="publish_cmd_vel" value="$(arg publish_cmd_vel)"/>
+        <param name="control_rate" value="$(arg control_rate)"/>
+
+        <param name="scan_range" value="$(arg scan_range)"/>
+        <param name="scan_angle_range" value="$(arg scan_angle_range)"/>
+        <param name="scan_downsample" value="$(arg scan_downsample)"/>
+    </node>
+</launch>

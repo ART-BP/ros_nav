@@ -1,0 +1,70 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="odom_topic" default="odom" />
+  <arg name="dog_name" default="small_dog" />
+
+  <arg name="start_neupan_service" default="true" />
+  <arg name="config_file" default="$(find neupan_service)/config/neupan_planner_limo.yaml" />
+  <arg name="dune_checkpoint" default="$(find neupan_service)/weights/limo/model_5000.pth" />
+  <arg name="neupan_conda_env" default="neupan38" />
+  <arg name="neupan_conda_setup" default="$(env HOME)/anaconda3/etc/profile.d/conda.sh" />
+
+  <arg name="map_frame" default="map" />
+  <arg name="base_frame" default="base_link" />
+  <arg name="lidar_frame" default="" />
+  <arg name="scan_topic" default="/scan" />
+
+  <arg name="scan_range" default="0.0 5.0" />
+  <arg name="scan_angle_range" default="-3.14 3.14" />
+  <arg name="scan_downsample" default="6" />
+
+  <!-- NeuPAN runs as a service backend. move_base owns cmd_vel publishing. -->
+  <group if="$(arg start_neupan_service)">
+    <node name="neupan_service" pkg="neupan_service" type="neupan_service_conda.sh" output="screen">
+      <env name="NEUPAN_CONDA_ENV" value="$(arg neupan_conda_env)" />
+      <env name="NEUPAN_CONDA_SETUP" value="$(arg neupan_conda_setup)" />
+      <env name="MPLCONFIGDIR" value="/tmp/matplotlib" />
+
+      <param name="config_file" value="$(arg config_file)" />
+      <param name="dune_checkpoint" value="$(arg dune_checkpoint)" />
+
+      <param name="map_frame" value="$(arg map_frame)" />
+      <param name="base_frame" value="$(arg base_frame)" />
+      <param name="lidar_frame" value="$(arg lidar_frame)" />
+
+      <param name="scan_topic" value="$(arg scan_topic)" />
+      <param name="path_topic" value="/neupan_service/manual_path" />
+      <param name="goal_topic" value="/neupan_service/manual_goal" />
+      <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
+
+      <param name="run_control_loop" value="false" />
+      <param name="publish_cmd_vel" value="false" />
+
+      <param name="scan_range" value="$(arg scan_range)" />
+      <param name="scan_angle_range" value="$(arg scan_angle_range)" />
+      <param name="scan_downsample" value="$(arg scan_downsample)" />
+    </node>
+  </group>
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="neupan_service/NeuPANLocalPlannerROS" />
+
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/teb/costmap_common_params_omni.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/neupan/costmap_common_params_omni.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/neupan/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/teb/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/neupan/move_base_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/teb/global_planner_params.yaml" command="load" />
+    <rosparam file="$(find omni_navigation)/param/$(arg dog_name)/neupan/neupan_local_planner_params.yaml" command="load" />
+
+    <param name="global_costmap/update_frequency" value="2.0" />
+    <param name="global_costmap/publish_frequency" value="1.0" />
+
+    <param name="NeuPANLocalPlannerROS/path_frame" value="$(arg map_frame)" />
+
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+    <remap from="odom" to="$(arg odom_topic)" />
+  </node>
+</launch>
